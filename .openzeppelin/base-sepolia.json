@@ -1,0 +1,179 @@
+{
+  "manifestVersion": "3.2",
+  "proxies": [
+    {
+      "address": "0x3adD1000920ef08D902fCc9de8053fdcaF708c9E",
+      "txHash": "0x0e6f7fa9cf4ad0e83756ff71e9574c7c062c3a94c0f9e4ac80fe51be4916b5b9",
+      "kind": "uups"
+    }
+  ],
+  "impls": {
+    "0bd8a7dc496db13c1a243b40f30e6d0190a25721c016c8145c4bf464ef709aab": {
+      "address": "0xc004305161fFDC90e7e755CD4995f59d1776af97",
+      "txHash": "0x51d23e381c80f32b5c3776e6922eca747a051052be1aa1f93603d8771bdbeb13",
+      "layout": {
+        "solcVersion": "0.8.24",
+        "storage": [
+          {
+            "label": "r1Token",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_contract(IR1Token)1660",
+            "contract": "Manager3send",
+            "src": "contracts/Manager3send.sol:36"
+          },
+          {
+            "label": "usdcToken",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_contract(IERC20)1232",
+            "contract": "Manager3send",
+            "src": "contracts/Manager3send.sol:37"
+          },
+          {
+            "label": "uniswapPair",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_contract(IUniswapV2Pair)1680",
+            "contract": "Manager3send",
+            "src": "contracts/Manager3send.sol:38"
+          },
+          {
+            "label": "tierPrices",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_enum(Tier)1693,t_uint256)",
+            "contract": "Manager3send",
+            "src": "contracts/Manager3send.sol:39"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)73_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)13_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(ReentrancyGuardStorage)226_storage": {
+            "label": "struct ReentrancyGuardUpgradeable.ReentrancyGuardStorage",
+            "members": [
+              {
+                "label": "_status",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_contract(IERC20)1232": {
+            "label": "contract IERC20",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IR1Token)1660": {
+            "label": "contract IR1Token",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IUniswapV2Pair)1680": {
+            "label": "contract IUniswapV2Pair",
+            "numberOfBytes": "20"
+          },
+          "t_enum(Tier)1693": {
+            "label": "enum Manager3send.Tier",
+            "members": [
+              "Micro",
+              "Standard",
+              "Big",
+              "Archive"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_enum(Tier)1693,t_uint256)": {
+            "label": "mapping(enum Manager3send.Tier => uint256)",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:43",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
