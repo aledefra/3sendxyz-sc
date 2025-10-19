@@ -33,7 +33,7 @@ npx hardhat test
 
 ### Deploy
 
-1. Fill `.env` with the token addresses, pair address, and tier prices (values are interpreted as USDC amounts with 6 decimals, e.g. `0.10` for $0.10).
+1. Fill `.env` with the token addresses, pair address, and tier prices (values are interpreted as USDC amounts with 6 decimals, e.g. `0.10` for $0.10). Set `VERIFY_ON_DEPLOY=true` (plus `ETHERSCAN_API_KEY`) if you want automatic Basescan verification.
 2. Run the deployment script:
 
 ```bash
@@ -42,7 +42,7 @@ npx hardhat run --network <network> scripts/deploy.ts
 
 ### Upgrade
 
-1. Set `MANAGER_PROXY_ADDRESS` in `.env`.
+1. Set `MANAGER_PROXY_ADDRESS` in `.env` (and `VERIFY_ON_UPGRADE=true` if you want to auto-verify the new implementation).
 2. Deploy the new implementation with:
 
 ```bash

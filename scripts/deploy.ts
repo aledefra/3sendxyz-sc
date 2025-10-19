@@ -1,4 +1,4 @@
-import { ethers, upgrades } from "hardhat";
+import { ethers, run, upgrades } from "hardhat";
 
 function requireEnv(name: string): string {
 	const value = process.env[name];
@@ -83,10 +83,46 @@ async function main() {
 		);
 	}
 
+	const shouldVerify =
+		(process.env.VERIFY_ON_DEPLOY || "").toLowerCase() === "true";
+	if (shouldVerify) {
+		if (!process.env.ETHERSCAN_API_KEY) {
+			console.warn(
+				"⚠️  VERIFY_ON_DEPLOY is true but ETHERSCAN_API_KEY is not set. Skipping verification."
+			);
+		} else if (!implementationAddress) {
+			console.warn(
+				"⚠️  Could not determine implementation address yet; skipping verification. Try again later via Hardhat verify task."
+			);
+		} else {
+			try {
+				console.log("   Verifying implementation on Etherscan...");
+				await run("verify:verify", {
+					address: implementationAddress,
+				});
+				console.log("   Etherscan verification complete.\n");
+			} catch (error) {
+				console.warn(
+					"⚠️  Verification failed. You can retry manually with:\n",
+					`    npx hardhat verify --network ${network.name} ${
+						implementationAddress ?? "<implementation>"
+					}`,
+					"\nError:",
+					error instanceof Error ? error.message : error
+				);
+			}
+		}
+	} else {
+		console.log(
+			"   Skipping Etherscan verification (set VERIFY_ON_DEPLOY=true to enable).\n"
+		);
+	}
+
 	if (implementationAddress) {
 		console.log(`   Implementation address: ${implementationAddress}`);
 	}
 	console.log("");
+
 	console.log("   Tier pricing (USDC, 6 decimals):");
 	console.log(`     Micro:    ${microPrice.toString()}`);
 	console.log(`     Standard: ${standardPrice.toString()}`);

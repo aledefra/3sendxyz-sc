@@ -1,4 +1,4 @@
-import { ethers, upgrades } from "hardhat";
+import { ethers, run, upgrades } from "hardhat";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -31,6 +31,26 @@ async function main() {
 
   console.log("✅ Upgrade completed!");
   console.log(`   New implementation address: ${implementationAddress}\n`);
+
+  const shouldVerify = (process.env.VERIFY_ON_UPGRADE || "").toLowerCase() === "true";
+  if (shouldVerify) {
+    if (!process.env.ETHERSCAN_API_KEY) {
+      console.warn("⚠️  VERIFY_ON_UPGRADE is true but ETHERSCAN_API_KEY is not set. Skipping verification.");
+    } else {
+      try {
+        console.log("   Verifying new implementation on Etherscan...");
+        await run("verify:verify", { address: implementationAddress });
+        console.log("   Etherscan verification complete.\n");
+      } catch (error) {
+        console.warn(
+          "⚠️  Verification failed. You can retry manually with:\n",
+          `    npx hardhat verify --network ${network.name} ${implementationAddress}`,
+          "\nError:",
+          error instanceof Error ? error.message : error
+        );
+      }
+    }
+  }
 }
 
 main().catch((error) => {
