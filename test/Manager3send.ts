@@ -20,6 +20,7 @@ async function deployFixture() {
 	const TokenFactory = await ethers.getContractFactory("R1TokenMock");
 	const r1Token = await TokenFactory.deploy();
 	const usdcToken = await TokenFactory.deploy();
+	const paymentToken = await TokenFactory.deploy();
 
 	const r1TokenAddress = await r1Token.getAddress();
 	const usdcTokenAddress = await usdcToken.getAddress();
@@ -28,6 +29,19 @@ async function deployFixture() {
 	const pair = await PairFactory.deploy(usdcTokenAddress, r1TokenAddress);
 	const pairAddress = await pair.getAddress();
 
+	const WethFactory = await ethers.getContractFactory("WETHMock");
+	const weth = await WethFactory.deploy();
+	const wethAddress = await weth.getAddress();
+
+	const RouterFactory = await ethers.getContractFactory("UniswapMockRouter");
+	const router = await RouterFactory.deploy(
+		pairAddress,
+		wethAddress,
+		usdcTokenAddress,
+		r1TokenAddress
+	);
+	const routerAddress = await router.getAddress();
+
 	const ManagerFactory = await ethers.getContractFactory("Manager3send");
 	const manager = await upgrades.deployProxy(
 		ManagerFactory,
@@ -35,6 +49,8 @@ async function deployFixture() {
 			r1TokenAddress,
 			usdcTokenAddress,
 			pairAddress,
+			routerAddress,
+			wethAddress,
 			MICRO_PRICE,
 			STANDARD_PRICE,
 			BIG_PRICE,
@@ -45,20 +61,29 @@ async function deployFixture() {
 
 	await manager.waitForDeployment();
 
+	const routerLiquidityR1 = 1_000_000n * 10n ** 18n;
+	const routerLiquidityUsdc = 1_000_000n * 10n ** 6n;
+	await r1Token.connect(owner).mint(routerAddress, routerLiquidityR1);
+	await usdcToken.connect(owner).mint(routerAddress, routerLiquidityUsdc);
+
 	const microRequired = await manager.getRequiredR1Amount(Tier.Micro);
 	const standardRequired = await manager.getRequiredR1Amount(Tier.Standard);
 	const bigRequired = await manager.getRequiredR1Amount(Tier.Big);
 	const archiveRequired = await manager.getRequiredR1Amount(Tier.Archive);
 
-	// Ensure the user has more than enough R1 tokens for every tier
 	const maxRequired = archiveRequired;
 	await r1Token.connect(owner).mint(user.address, maxRequired * 2n);
+	await usdcToken.connect(owner).mint(user.address, ARCHIVE_PRICE * 10n);
+	await paymentToken.connect(owner).mint(user.address, 10n ** 24n);
 
 	return {
 		manager,
 		r1Token,
 		usdcToken,
+		paymentToken,
 		pair,
+		router,
+		weth,
 		owner,
 		user,
 		other,
@@ -73,9 +98,8 @@ async function deployFixture() {
 
 describe("Manager3send", function () {
 	it("initializes correctly", async function () {
-		const { manager, r1Token, usdcToken, pair, owner } = await loadFixture(
-			deployFixture
-		);
+		const { manager, r1Token, usdcToken, pair, router, weth, owner } =
+			await loadFixture(deployFixture);
 
 		expect(await manager.owner()).to.equal(owner.address);
 		expect(await manager.r1Token()).to.equal(await r1Token.getAddress());
@@ -83,6 +107,10 @@ describe("Manager3send", function () {
 			await usdcToken.getAddress()
 		);
 		expect(await manager.uniswapPair()).to.equal(await pair.getAddress());
+		expect(await manager.uniswapRouter()).to.equal(
+			await router.getAddress()
+		);
+		expect(await manager.weth()).to.equal(await weth.getAddress());
 		expect(await manager.tierPrices(Tier.Micro)).to.equal(MICRO_PRICE);
 		expect(await manager.tierPrices(Tier.Standard)).to.equal(
 			STANDARD_PRICE
@@ -110,6 +138,7 @@ describe("Manager3send", function () {
 				.approve(await manager.getAddress(), requiredR1);
 
 			const supplyBefore = await r1Token.totalSupply();
+			const userBalanceBefore = await r1Token.balanceOf(user.address);
 
 			await expect(
 				manager.connect(user).transferPayment(tier, requiredR1)
@@ -118,7 +147,7 @@ describe("Manager3send", function () {
 				.withArgs(user.address, tier, price, requiredR1);
 
 			expect(await r1Token.balanceOf(user.address)).to.equal(
-				supplyBefore - requiredR1
+				userBalanceBefore - requiredR1
 			);
 			expect(await r1Token.totalSupply()).to.equal(
 				supplyBefore - requiredR1
@@ -128,6 +157,226 @@ describe("Manager3send", function () {
 			).to.equal(0n);
 		});
 	}
+
+	it("allows users to pay with USDC and burns the swapped R1", async function () {
+		const { manager, usdcToken, r1Token, user, required } = await loadFixture(
+			deployFixture
+		);
+
+		const tier = Tier.Standard;
+		const usdcAmount = await manager.tierPrices(tier);
+		const requiredR1 = required[tier];
+		const userUsdcBefore = await usdcToken.balanceOf(user.address);
+
+		await usdcToken
+			.connect(user)
+			.approve(await manager.getAddress(), usdcAmount);
+
+		await expect(
+			manager.connect(user).transferPaymentWithUSDC(tier, requiredR1)
+		)
+			.to.emit(manager, "PaymentProcessed")
+			.withArgs(user.address, tier, usdcAmount, requiredR1);
+
+		expect(await usdcToken.balanceOf(user.address)).to.equal(
+			userUsdcBefore - usdcAmount
+		);
+		expect(
+			await r1Token.balanceOf(await manager.getAddress())
+		).to.equal(0n);
+	});
+
+	it("allows users to pay with arbitrary tokens swapped into USDC", async function () {
+		const { manager, paymentToken, r1Token, user, required } =
+			await loadFixture(deployFixture);
+
+		const tier = Tier.Big;
+		const usdcAmount = await manager.tierPrices(tier);
+		const expectedR1 = required[tier];
+
+		const maxPaymentAmount = usdcAmount * 10n ** 12n;
+		const userTokenBefore = await paymentToken.balanceOf(user.address);
+
+		await paymentToken
+			.connect(user)
+			.approve(await manager.getAddress(), maxPaymentAmount);
+
+		const path = [await paymentToken.getAddress(), await manager.usdcToken()];
+
+		await expect(
+			manager
+				.connect(user)
+				.transferPaymentWithToken(
+					tier,
+					await paymentToken.getAddress(),
+					maxPaymentAmount,
+					expectedR1,
+					path
+				)
+		)
+			.to.emit(manager, "PaymentProcessed")
+			.withArgs(user.address, tier, usdcAmount, expectedR1);
+
+		const userTokenAfter = await paymentToken.balanceOf(user.address);
+		expect(userTokenBefore - userTokenAfter).to.equal(maxPaymentAmount);
+		expect(
+			await r1Token.balanceOf(await manager.getAddress())
+		).to.equal(0n);
+	});
+
+	it("refunds unused token input when swapping for USDC", async function () {
+		const { manager, paymentToken, user, required } = await loadFixture(
+			deployFixture
+		);
+
+		const tier = Tier.Standard;
+		const usdcAmount = await manager.tierPrices(tier);
+		const maxPaymentAmount = usdcAmount * 10n ** 12n + 10n ** 18n;
+		const requiredToken = usdcAmount * 10n ** 12n;
+
+		await paymentToken
+			.connect(user)
+			.approve(await manager.getAddress(), maxPaymentAmount);
+
+		const tokenBalanceBefore = await paymentToken.balanceOf(user.address);
+
+		await manager.connect(user).transferPaymentWithToken(
+			tier,
+			await paymentToken.getAddress(),
+			maxPaymentAmount,
+			required[tier],
+			[await paymentToken.getAddress(), await manager.usdcToken()]
+		);
+
+		const tokenBalanceAfter = await paymentToken.balanceOf(user.address);
+		expect(tokenBalanceBefore - tokenBalanceAfter).to.equal(requiredToken);
+	});
+
+	it("reverts when the minimum R1 output is set above the quote for USDC payments", async function () {
+		const { manager, usdcToken, user, required } = await loadFixture(
+			deployFixture
+		);
+
+		const tier = Tier.Big;
+		const usdcAmount = await manager.tierPrices(tier);
+
+		await usdcToken
+			.connect(user)
+			.approve(await manager.getAddress(), usdcAmount);
+
+		await expect(
+			manager
+				.connect(user)
+				.transferPaymentWithUSDC(tier, required[tier] + 1n)
+		).to.be.revertedWith("Manager3send: min output too high");
+	});
+
+	it("reverts when the token payment path is invalid", async function () {
+		const { manager, paymentToken, user, required } = await loadFixture(
+			deployFixture
+		);
+
+		const tier = Tier.Micro;
+		const maxPaymentAmount = (await manager.tierPrices(tier)) * 10n ** 12n;
+
+		await paymentToken
+			.connect(user)
+			.approve(await manager.getAddress(), maxPaymentAmount);
+
+		await expect(
+			manager
+				.connect(user)
+				.transferPaymentWithToken(
+					tier,
+					await paymentToken.getAddress(),
+					maxPaymentAmount,
+					required[tier],
+					[await paymentToken.getAddress(), await paymentToken.getAddress()]
+				)
+		).to.be.revertedWith("Manager3send: path must end in USDC");
+	});
+
+	it("allows users to pay with ETH, refunds excess, and burns R1", async function () {
+		const { manager, router, r1Token, user, required } = await loadFixture(
+			deployFixture
+		);
+
+		const tier = Tier.Micro;
+		const usdcAmount = await manager.tierPrices(tier);
+		const expectedR1 = required[tier];
+		const ethPrice = ethers.toBigInt(await router.ETH_PRICE_USDC());
+		const requiredEth =
+			(ethers.toBigInt(usdcAmount) * 10n ** 18n + (ethPrice - 1n)) /
+			ethPrice;
+		const bufferEth = requiredEth + 10n ** 14n;
+
+		const userBalanceBefore = await ethers.provider.getBalance(
+			user.address
+		);
+
+		const tx = await manager
+			.connect(user)
+			.transferPaymentWithETH(tier, expectedR1, {
+				value: bufferEth,
+			});
+		await tx.wait();
+
+		const userBalanceAfter = await ethers.provider.getBalance(user.address);
+		const spent = userBalanceBefore - userBalanceAfter;
+		const overspent = spent - requiredEth;
+		expect(spent >= requiredEth).to.be.true;
+		expect(overspent >= 0n && overspent < 10n ** 14n).to.be.true;
+
+		await expect(tx)
+			.to.emit(manager, "PaymentProcessed")
+			.withArgs(user.address, tier, usdcAmount, expectedR1);
+
+		expect(
+			await ethers.provider.getBalance(await manager.getAddress())
+		).to.equal(0n);
+		expect(
+			await r1Token.balanceOf(await manager.getAddress())
+		).to.equal(0n);
+	});
+
+	it("reverts when ETH provided is not enough to cover the USDC price", async function () {
+		const { manager, router, user, required } = await loadFixture(
+			deployFixture
+		);
+
+		const tier = Tier.Standard;
+		const usdcAmount = await manager.tierPrices(tier);
+		const expectedR1 = required[tier];
+		const ethPrice = ethers.toBigInt(await router.ETH_PRICE_USDC());
+		const requiredEth =
+			(ethers.toBigInt(usdcAmount) * 10n ** 18n + (ethPrice - 1n)) /
+			ethPrice;
+
+		await expect(
+			manager.connect(user).transferPaymentWithETH(tier, expectedR1, {
+				value: requiredEth - 1n,
+			})
+		).to.be.revertedWith("RouterMock: insufficient ETH");
+	});
+
+	it("reverts when the minimum R1 output is set above the quote for ETH payments", async function () {
+		const { manager, router, user, required } = await loadFixture(
+			deployFixture
+		);
+
+		const tier = Tier.Standard;
+		const usdcAmount = await manager.tierPrices(tier);
+		const ethPrice = ethers.toBigInt(await router.ETH_PRICE_USDC());
+		const requiredEth =
+			(ethers.toBigInt(usdcAmount) * 10n ** 18n + (ethPrice - 1n)) /
+			ethPrice;
+
+		await expect(
+			manager.connect(user).transferPaymentWithETH(tier, required[tier] + 1n, {
+				value: requiredEth,
+			})
+		).to.be.revertedWith("Manager3send: min output too high");
+	});
 
 	it("reverts when allowance is insufficient", async function () {
 		const { manager, r1Token, user } = await loadFixture(deployFixture);
@@ -227,6 +476,19 @@ describe("Manager3send", function () {
 		const pair = await PairFactory.deploy(tokenAddress, tokenAddress);
 		const pairAddress = await pair.getAddress();
 
+		const WethFactory = await ethers.getContractFactory("WETHMock");
+		const weth = await WethFactory.deploy();
+		const wethAddress = await weth.getAddress();
+
+		const RouterFactory = await ethers.getContractFactory("UniswapMockRouter");
+		const router = await RouterFactory.deploy(
+			pairAddress,
+			wethAddress,
+			tokenAddress,
+			tokenAddress
+		);
+		const routerAddress = await router.getAddress();
+
 		const ManagerFactory = await ethers.getContractFactory("Manager3send");
 
 		await expect(
@@ -236,6 +498,8 @@ describe("Manager3send", function () {
 					ethers.ZeroAddress,
 					tokenAddress,
 					pairAddress,
+					routerAddress,
+					wethAddress,
 					MICRO_PRICE,
 					STANDARD_PRICE,
 					BIG_PRICE,
@@ -252,6 +516,8 @@ describe("Manager3send", function () {
 					tokenAddress,
 					ethers.ZeroAddress,
 					pairAddress,
+					routerAddress,
+					wethAddress,
 					MICRO_PRICE,
 					STANDARD_PRICE,
 					BIG_PRICE,
@@ -268,6 +534,8 @@ describe("Manager3send", function () {
 					tokenAddress,
 					tokenAddress,
 					ethers.ZeroAddress,
+					routerAddress,
+					wethAddress,
 					MICRO_PRICE,
 					STANDARD_PRICE,
 					BIG_PRICE,
@@ -284,6 +552,44 @@ describe("Manager3send", function () {
 					tokenAddress,
 					tokenAddress,
 					pairAddress,
+					ethers.ZeroAddress,
+					wethAddress,
+					MICRO_PRICE,
+					STANDARD_PRICE,
+					BIG_PRICE,
+					ARCHIVE_PRICE,
+				],
+				{ initializer: "initialize", kind: "uups" }
+			)
+		).to.be.revertedWith("Manager3send: router address is zero");
+
+		await expect(
+			upgrades.deployProxy(
+				ManagerFactory,
+				[
+					tokenAddress,
+					tokenAddress,
+					pairAddress,
+					routerAddress,
+					ethers.ZeroAddress,
+					MICRO_PRICE,
+					STANDARD_PRICE,
+					BIG_PRICE,
+					ARCHIVE_PRICE,
+				],
+				{ initializer: "initialize", kind: "uups" }
+			)
+		).to.be.revertedWith("Manager3send: WETH address is zero");
+
+		await expect(
+			upgrades.deployProxy(
+				ManagerFactory,
+				[
+					tokenAddress,
+					tokenAddress,
+					pairAddress,
+					routerAddress,
+					wethAddress,
 					0n,
 					STANDARD_PRICE,
 					BIG_PRICE,
@@ -300,6 +606,8 @@ describe("Manager3send", function () {
 					tokenAddress,
 					tokenAddress,
 					pairAddress,
+					routerAddress,
+					wethAddress,
 					MICRO_PRICE,
 					0n,
 					BIG_PRICE,
@@ -316,6 +624,8 @@ describe("Manager3send", function () {
 					tokenAddress,
 					tokenAddress,
 					pairAddress,
+					routerAddress,
+					wethAddress,
 					MICRO_PRICE,
 					STANDARD_PRICE,
 					0n,
@@ -332,6 +642,8 @@ describe("Manager3send", function () {
 					tokenAddress,
 					tokenAddress,
 					pairAddress,
+					routerAddress,
+					wethAddress,
 					MICRO_PRICE,
 					STANDARD_PRICE,
 					BIG_PRICE,
@@ -358,6 +670,18 @@ describe("Manager3send", function () {
 			unrelatedAddress
 		);
 
+		const WethFactory = await ethers.getContractFactory("WETHMock");
+		const weth = await WethFactory.deploy();
+		const RouterFactory = await ethers.getContractFactory(
+			"UniswapMockRouter"
+		);
+		const router = await RouterFactory.deploy(
+			await wrongPair.getAddress(),
+			await weth.getAddress(),
+			usdcTokenAddress,
+			r1TokenAddress
+		);
+
 		const ManagerFactory = await ethers.getContractFactory("Manager3send");
 
 		await expect(
@@ -367,6 +691,8 @@ describe("Manager3send", function () {
 					r1TokenAddress,
 					usdcTokenAddress,
 					await wrongPair.getAddress(),
+					await router.getAddress(),
+					await weth.getAddress(),
 					MICRO_PRICE,
 					STANDARD_PRICE,
 					BIG_PRICE,
