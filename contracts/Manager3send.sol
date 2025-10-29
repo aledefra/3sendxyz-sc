@@ -14,6 +14,11 @@ interface IR1Token is IERC20 {
 }
 
 interface IUniswapV2Router {
+    function getAmountsIn(
+        uint256 amountOut,
+        address[] calldata path
+    ) external view returns (uint256[] memory amounts);
+
     function swapExactTokensForTokens(
         uint256 amountIn,
         uint256 amountOutMin,
@@ -280,6 +285,47 @@ contract Manager3send is
         require(usdcAmount > 0, "Manager3send: tier price is zero");
         r1Amount = _calculateR1Amount(usdcAmount);
         return (tier, usdcAmount, r1Amount);
+    }
+
+    function quotePaymentWithToken(
+        Tier tier,
+        address paymentToken,
+        address[] calldata paymentToUsdcPath
+    )
+        external
+        view
+        returns (uint256 r1Amount, uint256 tokenAmount, uint256 usdcEquivalent)
+    {
+        require(paymentToken != address(0), "Manager3send: token is zero");
+
+        usdcEquivalent = tierPrices[tier];
+        require(usdcEquivalent > 0, "Manager3send: tier price is zero");
+
+        uint256 pathLength = paymentToUsdcPath.length;
+        require(pathLength >= 2, "Manager3send: invalid path");
+        require(
+            paymentToUsdcPath[0] == paymentToken,
+            "Manager3send: path mismatch"
+        );
+        require(
+            paymentToUsdcPath[pathLength - 1] == address(usdcToken),
+            "Manager3send: path must end in USDC"
+        );
+
+        uint256[] memory amountsIn = uniswapRouter.getAmountsIn(
+            usdcEquivalent,
+            paymentToUsdcPath
+        );
+        require(
+            amountsIn.length == pathLength,
+            "Manager3send: router path length"
+        );
+
+        tokenAmount = amountsIn[0];
+        require(tokenAmount > 0, "Manager3send: quote input is zero");
+
+        r1Amount = _calculateR1Amount(usdcEquivalent);
+        return (r1Amount, tokenAmount, usdcEquivalent);
     }
 
     function getReserves()

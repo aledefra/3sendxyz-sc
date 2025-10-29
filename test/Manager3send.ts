@@ -435,6 +435,29 @@ describe("Manager3send", function () {
 		expect(quoteR1).to.equal(await manager.getRequiredR1Amount(Tier.Big));
 	});
 
+	it("quotes payment information when swapping from another token", async function () {
+		const { manager, paymentToken, required } =
+			await loadFixture(deployFixture);
+
+		const tier = Tier.Standard;
+		const usdcAmount = await manager.tierPrices(tier);
+		const path = [
+			await paymentToken.getAddress(),
+			await manager.usdcToken(),
+		];
+
+		const [r1Amount, tokenAmount, usdcEquivalent] =
+			await manager.quotePaymentWithToken(
+				tier,
+				await paymentToken.getAddress(),
+				path
+			);
+
+		expect(usdcEquivalent).to.equal(usdcAmount);
+		expect(r1Amount).to.equal(required[tier]);
+		expect(tokenAmount).to.equal(usdcAmount * 10n ** 12n);
+	});
+
 	it("reverts when the required R1 exceeds the caller limit", async function () {
 		const { manager, r1Token, user, required } = await loadFixture(
 			deployFixture

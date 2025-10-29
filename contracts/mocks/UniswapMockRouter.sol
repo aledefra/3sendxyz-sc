@@ -115,6 +115,26 @@ contract UniswapMockRouter is Ownable {
         amounts[1] = amountOut;
     }
 
+    function getAmountsIn(
+        uint256 amountOut,
+        address[] calldata path
+    ) external view returns (uint256[] memory amounts) {
+        require(path.length >= 2, "RouterMock: invalid path");
+        require(
+            path[path.length - 1] == address(usdcToken),
+            "RouterMock: must target USDC"
+        );
+
+        uint256 requiredIn = amountOut * 1e12;
+        require(requiredIn > 0, "RouterMock: zero in");
+
+        amounts = new uint256[](path.length);
+        for (uint256 i = 0; i < path.length - 1; i++) {
+            amounts[i] = requiredIn;
+        }
+        amounts[path.length - 1] = amountOut;
+    }
+
     receive() external payable {}
 
     function _quote(uint256 usdcAmount) internal view returns (uint256) {
