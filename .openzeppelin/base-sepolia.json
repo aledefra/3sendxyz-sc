@@ -2,15 +2,20 @@
   "manifestVersion": "3.2",
   "proxies": [
     {
-      "address": "0x3adD1000920ef08D902fCc9de8053fdcaF708c9E",
-      "txHash": "0x0e6f7fa9cf4ad0e83756ff71e9574c7c062c3a94c0f9e4ac80fe51be4916b5b9",
+      "address": "0x02aA6C63329e3dC6de7eCC3E57D23fD953ccd12A",
+      "txHash": "0x22a64a5970504186461c40df000610cee8f20b8068becd3d62e68a004b150357",
+      "kind": "uups"
+    },
+    {
+      "address": "0xbFB3524A5F441716C50d5D167B37b1e898abae89",
+      "txHash": "0xbe3852d1b0666d944798da6f0118f2cf540ea2a68c4b6e14acc80c2b6c7caa49",
       "kind": "uups"
     }
   ],
   "impls": {
-    "0bd8a7dc496db13c1a243b40f30e6d0190a25721c016c8145c4bf464ef709aab": {
-      "address": "0xc004305161fFDC90e7e755CD4995f59d1776af97",
-      "txHash": "0x51d23e381c80f32b5c3776e6922eca747a051052be1aa1f93603d8771bdbeb13",
+    "4bb754f94a3a4baecb110472644072bc62d18a9ef933d5ea5c868857af9b15fd": {
+      "address": "0x524D99DB8a9d77De100fB7D3F5c7AF72752aF921",
+      "txHash": "0xa1a50d3ec0f4a5bfea4013b60202ccf0b5404d1d04dde7518325c8322ab249b7",
       "layout": {
         "solcVersion": "0.8.24",
         "storage": [
@@ -18,33 +23,49 @@
             "label": "r1Token",
             "offset": 0,
             "slot": "0",
-            "type": "t_contract(IR1Token)1660",
+            "type": "t_contract(IR1Token)2408",
             "contract": "Manager3send",
-            "src": "contracts/Manager3send.sol:36"
+            "src": "contracts/Manager3send.sol:70"
           },
           {
             "label": "usdcToken",
             "offset": 0,
             "slot": "1",
-            "type": "t_contract(IERC20)1232",
+            "type": "t_contract(IERC20)1470",
             "contract": "Manager3send",
-            "src": "contracts/Manager3send.sol:37"
+            "src": "contracts/Manager3send.sol:71"
           },
           {
             "label": "uniswapPair",
             "offset": 0,
             "slot": "2",
-            "type": "t_contract(IUniswapV2Pair)1680",
+            "type": "t_contract(IUniswapV2Pair)2489",
             "contract": "Manager3send",
-            "src": "contracts/Manager3send.sol:38"
+            "src": "contracts/Manager3send.sol:72"
+          },
+          {
+            "label": "uniswapRouter",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_contract(IUniswapV2Router)2469",
+            "contract": "Manager3send",
+            "src": "contracts/Manager3send.sol:73"
+          },
+          {
+            "label": "weth",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_address",
+            "contract": "Manager3send",
+            "src": "contracts/Manager3send.sol:74"
           },
           {
             "label": "tierPrices",
             "offset": 0,
-            "slot": "3",
-            "type": "t_mapping(t_enum(Tier)1693,t_uint256)",
+            "slot": "5",
+            "type": "t_mapping(t_enum(Tier)2506,t_uint256)",
             "contract": "Manager3send",
-            "src": "contracts/Manager3send.sol:39"
+            "src": "contracts/Manager3send.sol:75"
           }
         ],
         "types": {
@@ -106,19 +127,23 @@
             "label": "uint64",
             "numberOfBytes": "8"
           },
-          "t_contract(IERC20)1232": {
+          "t_contract(IERC20)1470": {
             "label": "contract IERC20",
             "numberOfBytes": "20"
           },
-          "t_contract(IR1Token)1660": {
+          "t_contract(IR1Token)2408": {
             "label": "contract IR1Token",
             "numberOfBytes": "20"
           },
-          "t_contract(IUniswapV2Pair)1680": {
+          "t_contract(IUniswapV2Pair)2489": {
             "label": "contract IUniswapV2Pair",
             "numberOfBytes": "20"
           },
-          "t_enum(Tier)1693": {
+          "t_contract(IUniswapV2Router)2469": {
+            "label": "contract IUniswapV2Router",
+            "numberOfBytes": "20"
+          },
+          "t_enum(Tier)2506": {
             "label": "enum Manager3send.Tier",
             "members": [
               "Micro",
@@ -128,7 +153,7 @@
             ],
             "numberOfBytes": "1"
           },
-          "t_mapping(t_enum(Tier)1693,t_uint256)": {
+          "t_mapping(t_enum(Tier)2506,t_uint256)": {
             "label": "mapping(enum Manager3send.Tier => uint256)",
             "numberOfBytes": "32"
           }

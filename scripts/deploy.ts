@@ -23,6 +23,8 @@ async function main() {
 	const r1Address = requireEnv("R1_TOKEN_ADDRESS");
 	const usdcAddress = requireEnv("USDC_TOKEN_ADDRESS");
 	const pairAddress = requireEnv("R1_USDC_PAIR_ADDRESS");
+	const routerAddress = requireEnv("UNISWAP_ROUTER_ADDRESS");
+	const wethAddress = requireEnv("WETH_ADDRESS");
 
 	const microPrice = parseUsdcPriceEnv("TIER_PRICE_MICRO");
 	const standardPrice = parseUsdcPriceEnv("TIER_PRICE_STANDARD");
@@ -48,6 +50,8 @@ async function main() {
 			r1Address,
 			usdcAddress,
 			pairAddress,
+			routerAddress,
+			wethAddress,
 			microPrice,
 			standardPrice,
 			bigPrice,
