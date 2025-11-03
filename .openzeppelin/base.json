@@ -1,0 +1,199 @@
+{
+  "manifestVersion": "3.2",
+  "proxies": [
+    {
+      "address": "0x6660d6b8eB523cEC00ecc4091174d006De5F7D3B",
+      "txHash": "0x48ea840dbc4cd9fc71ef9606c4c15af99c6486774d38c4c8a853aff30fc1c80a",
+      "kind": "uups"
+    }
+  ],
+  "impls": {
+    "4bb754f94a3a4baecb110472644072bc62d18a9ef933d5ea5c868857af9b15fd": {
+      "address": "0xaA55C85a8c4102a8417d0f7aD310d11A3f95A483",
+      "txHash": "0x2c0e56ce9cb2669a536bceedee50194c0cac88cf78fb2c8f94df56634dd8c7a6",
+      "layout": {
+        "solcVersion": "0.8.24",
+        "storage": [
+          {
+            "label": "r1Token",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_contract(IR1Token)2230",
+            "contract": "Manager3send",
+            "src": "contracts/Manager3send.sol:70"
+          },
+          {
+            "label": "usdcToken",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_contract(IERC20)1322",
+            "contract": "Manager3send",
+            "src": "contracts/Manager3send.sol:71"
+          },
+          {
+            "label": "uniswapPair",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_contract(IUniswapV2Pair)2311",
+            "contract": "Manager3send",
+            "src": "contracts/Manager3send.sol:72"
+          },
+          {
+            "label": "uniswapRouter",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_contract(IUniswapV2Router)2291",
+            "contract": "Manager3send",
+            "src": "contracts/Manager3send.sol:73"
+          },
+          {
+            "label": "weth",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_address",
+            "contract": "Manager3send",
+            "src": "contracts/Manager3send.sol:74"
+          },
+          {
+            "label": "tierPrices",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_enum(Tier)2328,t_uint256)",
+            "contract": "Manager3send",
+            "src": "contracts/Manager3send.sol:75"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)73_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)13_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(ReentrancyGuardStorage)226_storage": {
+            "label": "struct ReentrancyGuardUpgradeable.ReentrancyGuardStorage",
+            "members": [
+              {
+                "label": "_status",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_contract(IERC20)1322": {
+            "label": "contract IERC20",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IR1Token)2230": {
+            "label": "contract IR1Token",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IUniswapV2Pair)2311": {
+            "label": "contract IUniswapV2Pair",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IUniswapV2Router)2291": {
+            "label": "contract IUniswapV2Router",
+            "numberOfBytes": "20"
+          },
+          "t_enum(Tier)2328": {
+            "label": "enum Manager3send.Tier",
+            "members": [
+              "Micro",
+              "Standard",
+              "Big",
+              "Archive"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_enum(Tier)2328,t_uint256)": {
+            "label": "mapping(enum Manager3send.Tier => uint256)",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:43",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
