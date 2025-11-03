@@ -199,6 +199,193 @@
           ]
         }
       }
+    },
+    "88a25ffb87a0e1ea982bb14b2e2631cdbeeb1cdcc890dd98deb76f112d9339e7": {
+      "address": "0xD8A5f558541e4DD4A5BfB1c6b5AdaA2Ff23a7a4A",
+      "txHash": "0x3e9dbe9e41aa5fb29ad7ad851b28708ff05c52a603de6643a08bc4648f80cfa0",
+      "layout": {
+        "solcVersion": "0.8.24",
+        "storage": [
+          {
+            "label": "r1Token",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_contract(IR1Token)2230",
+            "contract": "Manager3send",
+            "src": "contracts/Manager3send.sol:70"
+          },
+          {
+            "label": "usdcToken",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_contract(IERC20)1322",
+            "contract": "Manager3send",
+            "src": "contracts/Manager3send.sol:71"
+          },
+          {
+            "label": "uniswapPair",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_contract(IUniswapV2Pair)2311",
+            "contract": "Manager3send",
+            "src": "contracts/Manager3send.sol:72"
+          },
+          {
+            "label": "uniswapRouter",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_contract(IUniswapV2Router)2291",
+            "contract": "Manager3send",
+            "src": "contracts/Manager3send.sol:73"
+          },
+          {
+            "label": "weth",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_address",
+            "contract": "Manager3send",
+            "src": "contracts/Manager3send.sol:74"
+          },
+          {
+            "label": "tierPrices",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_enum(Tier)2328,t_uint256)",
+            "contract": "Manager3send",
+            "src": "contracts/Manager3send.sol:75"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)73_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)13_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(ReentrancyGuardStorage)226_storage": {
+            "label": "struct ReentrancyGuardUpgradeable.ReentrancyGuardStorage",
+            "members": [
+              {
+                "label": "_status",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_contract(IERC20)1322": {
+            "label": "contract IERC20",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IR1Token)2230": {
+            "label": "contract IR1Token",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IUniswapV2Pair)2311": {
+            "label": "contract IUniswapV2Pair",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IUniswapV2Router)2291": {
+            "label": "contract IUniswapV2Router",
+            "numberOfBytes": "20"
+          },
+          "t_enum(Tier)2328": {
+            "label": "enum Manager3send.Tier",
+            "members": [
+              "Micro",
+              "Standard",
+              "Big",
+              "Archive"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_enum(Tier)2328,t_uint256)": {
+            "label": "mapping(enum Manager3send.Tier => uint256)",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.ReentrancyGuard": [
+            {
+              "contract": "ReentrancyGuardUpgradeable",
+              "label": "_status",
+              "type": "t_uint256",
+              "src": "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol:43",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
     }
   }
 }
